@@ -11,6 +11,8 @@ class Roomba:
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
         self.max_search_time = 2
+        self.resolution = "high"
+        self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
 
         # ARA* related member variables
         self.incons = set()
@@ -47,46 +49,51 @@ class Roomba:
     def findPath(self):
         start_time = time.time()
 
-        start_state = State(self.start[0], self.start[1], self.start[2], g=0)
-        start_state.h = self.heuristicFunc(start_state)
+        for resolution in ['low', 'high']:
+            self.resolution = resolution
+            start_state = State(self.start[0], self.start[1], self.start[2], g=0)
+            start_state.h = self.heuristicFunc(start_state)
 
-        self.goal_state = State(self.goal[0], self.goal[1], self.goal[2], g=float('inf'))
+            self.goal_state = State(self.goal[0], self.goal[1], self.goal[2], g=float('inf'))
 
-        # initialize data structures
-        self.incons = set()
-        self.closed = dict()
-        self.open = PriorityQueue()
-        self.open_states = dict()
-
-        self.epsilon = self.epsilon_init_val
-
-        self.open.put((self.fvalue(start_state), start_state))
-        self.open_states[start_state] = start_state
-
-        self.improvePath() 
-
-        curr_time = time.time()
-
-        # path should be found at this point. return a solution if no more time is left
-        if ((curr_time - start_time >= self.max_search_time)):
-            return self.getSolution()
-
-        while (self.epsilon > 1): # TODO change this condition to use epsilon prime instead (read algorithm)
-            self.decreaseEpsilon()
-
-            self.updateOpen()
+            # initialize data structures
             self.incons = set()
             self.closed = dict()
+            self.open = PriorityQueue()
+            self.open_states = dict()
+
+            self.epsilon = self.epsilon_init_val
+
+            self.open.put((self.fvalue(start_state), start_state))
+            self.open_states[start_state] = start_state
 
             self.improvePath()
 
-            if (self.goal_state and (self.goal_state.g < float('inf'))):
-                print("path found for epsilon = {}".format(self.epsilon))
+            if (self.goal_state.g == float('inf')): # if no solution is found in lower res, skip to higher res
+                continue 
 
             curr_time = time.time()
 
+            # path should be found at this point. return a solution if no more time is left
             if ((curr_time - start_time >= self.max_search_time)):
                 return self.getSolution()
+
+            while (self.epsilon > 1): # TODO change this condition to use epsilon prime instead (read algorithm)
+                self.decreaseEpsilon()
+
+                self.updateOpen()
+                self.incons = set()
+                self.closed = dict()
+
+                self.improvePath()
+
+                if (self.goal_state and (self.goal_state.g < float('inf'))):
+                    print("path found for epsilon = {}".format(self.epsilon))
+
+                curr_time = time.time()
+
+                if ((curr_time - start_time >= self.max_search_time)):
+                    return self.getSolution()
 
         return self.getSolution()
 
@@ -155,9 +162,23 @@ class Roomba:
 
     def getSuccessors(self, state):
         sx, sy, stheta = state.x, state.y, state.theta
+        motion_primitives = None
         successors = []
 
-        for action in self.lattice_resolution_dict['high']:
+        if (self.resolution == "high"):
+            motion_primitives = self.lattice_resolution_dict['high']
+        else: # low resolution
+            state_loc = state.x, state.y
+            start_loc = self.start[:2]
+            goal_loc = self.goal[:2]
+
+            if ((euclid(state_loc, start_loc) < self.heat_zone_threshold) or (euclid(state_loc, goal_loc) < self.heat_zone_threshold)):
+                motion_primitives = self.lattice_resolution_dict['high']
+            else:
+                motion_primitives = self.lattice_resolution_dict['low']
+
+
+        for action in motion_primitives:
             transitions = action.get_transitions(state)
 
             dx = 0
