@@ -1,5 +1,5 @@
 import math
-from state import State
+from State import State
 
 class Action:
     def __init__(self):
@@ -116,9 +116,6 @@ class ForwardRightSlightAction(Action):
         x_2 = round(x_1 + self.min_displacement * math.cos(end_theta))
         y_2 = round(y_1 + self.min_displacement * math.sin(end_theta))
         theta_2 = end_theta 
-
-        print("y1_raw: ", y + self.min_displacement * math.sin(theta))
-        print("y2_raw: ", y_1 + self.min_displacement * math.sin(end_theta))
 
         dx_1 = x_1 - x
         dy_1 = y_1 - y
