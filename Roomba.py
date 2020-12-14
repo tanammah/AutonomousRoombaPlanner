@@ -12,6 +12,7 @@ class Roomba:
         self.lattice_resolution_dict = self.generateResolutionDict()
         self.max_search_time = 2
         self.resolution = "high"
+        self.heuristic_map = None # numpy array 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
 
         # ARA* related member variables
@@ -19,7 +20,7 @@ class Roomba:
         self.closed = dict()
         self.open = PriorityQueue()
         self.open_states = dict()
-        self.epsilon_init_val = 50
+        self.epsilon_init_val = 5
         self.epsilon_decrement = 2
         self.epsilon = self.epsilon_init_val
         self.goal_state = None
@@ -41,7 +42,7 @@ class Roomba:
         res_dict = dict()
 
         res_dict['low'] = [ForwardAction(), ForwardLeftSlightAction(), ForwardRightSlightAction(), BackwardAction()]
-        res_dict['high'] = [ForwardAction(), ForwardLeftSlightAction(), ForwardLeftSharpAction(), 
+        res_dict['high'] = [ForwardAction(), ForwardShortAction(), ForwardLeftSlightAction(), ForwardLeftSharpAction(), 
                                 ForwardRightSlightAction(), ForwardRightSharpAction(), BackwardAction(), 
                                 BackwardLeftSlightAction(), BackwardRightSlightAction()]
         return res_dict
@@ -54,7 +55,7 @@ class Roomba:
             start_state = State(self.start[0], self.start[1], self.start[2], g=0)
             start_state.h = self.heuristicFunc(start_state)
 
-            self.goal_state = State(self.goal[0], self.goal[1], self.goal[2], g=float('inf'))
+            self.goal_state = State(self.goal[0], self.goal[1], self.goal[2], g=float('inf'), h=0)
 
             # initialize data structures
             self.incons = set()
@@ -102,6 +103,7 @@ class Roomba:
         if self.goal_state and (self.goal_state.g < float('inf')):
             return self.backtrack(self.goal_state)
         return None
+
     def improvePath(self):
         while (not self.open.empty()):
             min_state = self.open.get()[1]
@@ -139,6 +141,7 @@ class Roomba:
             state = self.open.get()[1]
 
             if (state.g > self.open_states[state].g): continue # skip dummy nodes!
+            if ((state.g + state.h) >= self.goal_state.g): continue # prunes states that can never produce a more optimal solution
 
             state_buffer.append(state)
 
@@ -194,8 +197,9 @@ class Roomba:
             successor_y = sy + dy
             successor_theta = stheta + dtheta
 
+            # normalize so thetas stay within {0 -> 2pi}
             if (successor_theta < 0):
-                successor_theta = 2*math.pi + successor_theta
+                successor_theta = successor_theta % (2*math.pi)
             elif (successor_theta > 2*math.pi):
                 successor_theta = successor_theta % (2*math.pi)
 
@@ -209,15 +213,21 @@ class Roomba:
 
     def backtrack(self, state):
         """returns a sequence of steps to get to given state from the start state"""
+        tot_cost = 0
         steps = []
         while (state.parent is not None):
             action = state.parent_action
             transitions = action.get_transitions(state.parent)
+            tot_cost += action.cost
             steps = transitions + steps
             state = state.parent
+        print("total_cost is ", tot_cost)
         return steps
 
     def checkValidState(self, state):
+        return True # TODO: change this to actually reference the map and also check bounds
+
+    def checkValidLocation(self, loc):
         return True # TODO: change this to actually reference the map and also check bounds
 
     def heuristicFunc(self, state):
@@ -231,4 +241,28 @@ class Roomba:
     def decreaseEpsilon(self):
         self.epsilon -= self.epsilon_decrement
         if (self.epsilon < 1): self.epsilon = 1
+
+    def updateHeuristicMap(self):
+        """Updates the heuristic for map all obstacle-free map coordinates."""
+        start = (self.goal[0], self.goal[1], 0)
+
+        dx = [-1, -1, 0, 1, 1, 1, 0, -1]
+        dy = [0, -1, -1, -1, 0, 1, 1, 1]
+
+        queue = [start]
+        visited = set()
+        visited.add(str(start[0]) + "&" + str(start[1]))
+
+        while (len(queue) > 0):
+            x, y, steps = queue.pop(0)
+            self.heuristic_map[y][x] = steps
+
+            for i in range(len(dx)):
+                x_prime = x + dx[i]
+                y_prime = y + dy[i]
+                key = str(x_prime) + "&" + str(y_prime)
+                if (key not in visited) and (self.checkValidLocation((x_prime, y_prime))):
+                    queue.append((x_prime, y_prime, steps + 1))
+                    visited.add(key)
+
 

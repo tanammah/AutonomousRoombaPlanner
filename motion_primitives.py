@@ -45,6 +45,28 @@ class ForwardAction(Action):
 
         return [(dx_1, -dy_1, dtheta_1), (dx_2, -dy_2, dtheta_2)]
 
+class ForwardShortAction(Action):
+    def __init__(self):
+        self.name = "Forward_Short"
+        self.cost = 1
+        self.dtheta = 0
+        super().__init__()
+
+    def get_transitions(self, init_state):
+        x, y, theta = init_state.x, init_state.y, init_state.theta
+
+        end_theta = theta + self.dtheta # final theta at end state (after having taken action)
+
+        x_1 = round(x + self.min_displacement * math.cos(theta))
+        y_1 = round(y + self.min_displacement * math.sin(theta))
+        theta_1 = end_theta
+
+        dx_1 = x_1 - x
+        dy_1 = y_1 - y
+        dtheta_1 = self.dtheta
+
+        return [(dx_1, -dy_1, dtheta_1)]
+
 class ForwardLeftSlightAction(Action):
     def __init__(self):
         self.name = "Forward_Left_Slight"

@@ -3,12 +3,12 @@ import math
 
 class State:
     "This class represents the search state that will be used for ARA* search"
-    def __init__(self, x, y, theta, parent=None, parent_action=None, g=float('inf')):
+    def __init__(self, x, y, theta, parent=None, parent_action=None, g=float('inf'), h=float('inf')):
         self.x = x
         self.y = y
         self.theta = theta % (2*math.pi)
         self.g = g
-        self.h = float('inf')
+        self.h = h
         self.parent = parent
         self.parent_action = parent_action
 
