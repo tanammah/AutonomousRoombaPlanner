@@ -10,9 +10,9 @@ import random
 
 def init(data):
     data.count = 0
-    data.obstacle_grid = np.array([[False]*data.width for i in range(data.height)])
     data.rows = 60
     data.cols = 60
+    data.obstacle_grid = np.array([[False]*data.cols for i in range(data.rows)])
     data.img_id = None
     data.img_file = './roomba.png'
     data.pil_img = Image.open(data.img_file).resize((data.width//data.cols, data.height//data.rows))
@@ -36,11 +36,11 @@ def loadSavedData(data, d):
     start = d['start']
     goal = d['goal']
     obstacle_grid = d['gridmap']
-    data.roomba_col = start[0]
-    data.roomba_row = start[1]
+    data.roomba_col = int(start[0])
+    data.roomba_row = int(start[1])
     data.roomba_theta = start[2]
-    data.goal_col = goal[0]
-    data.goal_row = goal[1]
+    data.goal_col = int(goal[0])
+    data.goal_row = int(goal[1])
     data.goal_theta = goal[2]
     data.obstacle_grid = obstacle_grid
 
@@ -78,14 +78,14 @@ def randomizeMap(data, obstacle_chance=0.4):
                         data.obstacle_grid[r+offset[0]][c+offset[1]] = True
 
 def randomizeStart(data):
-    data.roomba_row = random.randint(0, data.rows-1)
-    data.roomba_col = random.randint(0, data.rows-1)
+    data.roomba_row = random.randint(0, min(data.rows-1, 15))
+    data.roomba_col = random.randint(0, min(data.cols-1, 15))
     data.roomba_theta = random.randint(0, 7)*45
     return (data.roomba_col, data.roomba_row, data.roomba_theta)
 
 def randomizeGoal(data):
-    data.goal_row = random.randint(0, data.rows-1)
-    data.goal_col = random.randint(0, data.rows-1)
+    data.goal_row = random.randint(max(0, data.rows-15), data.rows-1)
+    data.goal_col = random.randint(max(0, data.cols-15), data.cols-1)
     data.goal_theta = random.randint(0, 7)*45
     return (data.goal_col, data.goal_row, data.goal_theta)
 
@@ -201,11 +201,11 @@ def run(map_path='./map1.txt', width=300, height=300):
     data = Visualizer()
     data.width = width
     data.height = height
-    data.timerDelay = 300 # milliseconds
+    data.timerDelay = 100 # milliseconds
     data.map_path = map_path
 
-    num_generated_maps = 1
-    # while (num_generated_maps < 10):
+    num_generated_maps = 0
+    # while (num_generated_maps < 1):
     #     init(data)
     #     start = randomizeStart(data)
     #     goal = randomizeGoal(data)
@@ -217,7 +217,7 @@ def run(map_path='./map1.txt', width=300, height=300):
 
     #     data.path = data.roomba.findPath()
     #     if data.path != None:
-    #         np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
+    #         np.savez('./map2_' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
     #         num_generated_maps += 1
     d = np.load('map9.npz')
     init(data)
