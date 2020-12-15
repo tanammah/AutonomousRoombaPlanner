@@ -90,6 +90,9 @@ def drawInitialMap(canvas, data):
             (x0, y0, x1, y1) = getCellBounds(row, col, data)
             fill = "cyan" if (data.obstacle_grid[row][col]) else "orange"
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
+    # draw goal state
+    (x0, y0, x1, y1) = getCellBounds(data.goal_row, data.goal_col, data)
+    canvas.create_rectangle(x0, y0, x1, y1, fill="red")
     # draw roomba
     data.tkimage = ImageTk.PhotoImage(data.pil_img.rotate(data.roomba_theta))
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
@@ -97,6 +100,9 @@ def drawInitialMap(canvas, data):
 
 
 def redrawAll(canvas, data):
+    (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
+    canvas.create_rectangle(x0, y0, x1, y1, fill="green")
+
     step = data.path[data.count]
     data.roomba_theta = (data.roomba_theta + math.degrees(step[2])) % 360
     data.roomba_col += step[0]

@@ -70,7 +70,7 @@ class ForwardShortAction(Action):
 class ForwardLeftSlightAction(Action):
     def __init__(self):
         self.name = "Forward_Left_Slight"
-        self.cost = 2
+        self.cost = 2.4
         self.dtheta = math.pi/4
         super().__init__()
 
@@ -100,7 +100,7 @@ class ForwardLeftSlightAction(Action):
 class ForwardLeftSharpAction(Action):
     def __init__(self):
         self.name = "Forward_Left_Sharp"
-        self.cost = 1
+        self.cost = 1.4
         self.dtheta = math.pi/4
         super().__init__()
 
@@ -122,7 +122,7 @@ class ForwardLeftSharpAction(Action):
 class ForwardRightSlightAction(Action):
     def __init__(self):
         self.name = "Forward_Right_Slight"
-        self.cost = 2
+        self.cost = 2.4
         self.dtheta = -math.pi/4
         super().__init__()
 
@@ -152,7 +152,7 @@ class ForwardRightSlightAction(Action):
 class ForwardRightSharpAction(Action):
     def __init__(self):
         self.name = "Forward_Right_Sharp"
-        self.cost = 1
+        self.cost = 1.4
         self.dtheta = -math.pi/4
         super().__init__()
 
@@ -205,7 +205,7 @@ class BackwardAction(Action):
 class BackwardLeftSlightAction(Action):
     def __init__(self):
         self.name = "Backward_Left_Slight"
-        self.cost = 3
+        self.cost = 3.8
         self.dtheta = -math.pi/4
         super().__init__()
         self.min_displacement = -1.45
@@ -236,7 +236,7 @@ class BackwardLeftSlightAction(Action):
 class BackwardRightSlightAction(Action):
     def __init__(self):
         self.name = "Backward_Right_Slight"
-        self.cost = 3
+        self.cost = 3.8
         self.dtheta = math.pi/4
         super().__init__()
         self.min_displacement = -1.45
