@@ -1,5 +1,5 @@
 import math
-from State import State
+from state import State
 
 class Action:
     def __init__(self):

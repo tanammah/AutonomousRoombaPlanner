@@ -1,7 +1,6 @@
 from Roomba import Roomba
-from State import State
+from state import State
 import math
-from queue import PriorityQueue
 
 
 roomba = Roomba()

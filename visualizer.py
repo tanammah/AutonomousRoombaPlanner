@@ -4,26 +4,34 @@ from tkinter import *
 import numpy as np
 from PIL import ImageTk
 from PIL import Image
+import math
+from Roomba import Roomba
 
 def init(data):
+    data.count = 0
     data.obstacle_grid = np.array([[False]*data.width for i in range(data.height)])
-    data.img_id = None
-    data.img_file = './roomba.png'
-    data.pil_img = Image.open(data.img_file).resize((10, 10))
-    data.roomba_img = None #ImageTk.PhotoImage(file=data.img_file)
     data.rows = 50
     data.cols = 50
+    data.img_id = None
+    data.img_file = './roomba.png'
+    data.pil_img = Image.open(data.img_file).resize((data.width//data.cols, data.height//data.rows))
+    data.roomba_img = None
+
     with open(data.map_path, 'r') as f:
         start_pos = f.readline().split(' ')
         data.roomba_col = int(start_pos[0])
         data.roomba_row = int(start_pos[1])
         data.roomba_theta = int(start_pos[2])
-        data.goal_pos = f.readline()
+        
+        data.goal_pos = f.readline().split(' ')
+        data.goal_col = int(start_pos[0])
+        data.goal_row = int(start_pos[1])
+        data.goal_theta = int(start_pos[2])
+
         for line in f:
             args = line.split(' ')
             if args[0] == 'r':
                 data.obstacle_grid[int(args[2]):int(args[4]), int(args[1]):int(args[3])] = True
-    # data.select_obstacles = [] # (row, col) of selection, (-1,-1) for none
 
 def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
@@ -91,12 +99,16 @@ def drawInitialMap(canvas, data):
 
 
 def redrawAll(canvas, data):
-    data.roomba_theta = (data.roomba_theta + 90) % 360
-    data.roomba_col += 1
-    data.roomba_row += 1
+    step = data.path[data.count]
+    data.roomba_theta = (data.roomba_theta + math.degrees(step[2])) % 360
+    data.roomba_col += step[0]
+    data.roomba_row += step[1]
     data.tkimage = ImageTk.PhotoImage(data.pil_img.rotate(data.roomba_theta))
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     data.img_id = canvas.create_image(x0+(x1-x0)//2, y0+(y1-y0)//2, image=data.tkimage)
+
+    if data.count < len(data.path):
+        data.count += 1
 
 ####################################
 # use the run function as-is
@@ -106,9 +118,6 @@ def run(map_path='./map1.txt', width=300, height=300):
     def redrawAllWrapper(canvas, data):
         if data.img_id != None:
            canvas.delete(data.img_id)
-        # canvas.delete(ALL)
-        # canvas.create_rectangle(0, 0, data.width, data.height,
-        #                         fill='white', width=0)
         redrawAll(canvas, data)
         canvas.update()    
 
@@ -130,14 +139,25 @@ def run(map_path='./map1.txt', width=300, height=300):
     data = Visualizer()
     data.width = width
     data.height = height
-    data.timerDelay = 1000 # milliseconds
+    data.timerDelay = 300 # milliseconds
     data.map_path = map_path
     init(data)
+
+    roomba = Roomba()
+    roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+    roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
+    roomba.setMap(data.obstacle_grid)
+
     # create the root and the canvas
     root = Tk()
     canvas = Canvas(root, width=data.width, height=data.height)
     canvas.pack()
     drawInitialMap(canvas, data)
+
+    # generate initial plan
+    data.path = roomba.findPath()
+    print(data.path)
+
     # set up events
     root.bind("<Button-1>", lambda event:
                             mousePressedWrapper(event, canvas, data))
