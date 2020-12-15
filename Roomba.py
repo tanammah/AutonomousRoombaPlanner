@@ -75,6 +75,9 @@ class Roomba:
             if (self.goal_state.g == float('inf')): # if no solution is found in lower res, skip to higher res
                 continue 
 
+            if (self.goal_state and (self.goal_state.g < float('inf'))):
+                    print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
+
             curr_time = time.time()
 
             # path should be found at this point. return a solution if no more time is left
@@ -91,7 +94,7 @@ class Roomba:
                 self.improvePath()
 
                 if (self.goal_state and (self.goal_state.g < float('inf'))):
-                    print("path found for epsilon = {}".format(self.epsilon))
+                    print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
 
                 curr_time = time.time()
 
@@ -234,9 +237,9 @@ class Roomba:
             steps = transitions + steps
             state = state.parent
         print("total_cost is ", tot_cost)
-        return self.convertToPositions(steps)
+        return self.convertStepsToPositions(steps)
     
-    def convertToPositions(self, steps):
+    def convertStepsToPositions(self, steps):
         positions = []
         curr_col = self.start[0]
         curr_row = self.start[1]
