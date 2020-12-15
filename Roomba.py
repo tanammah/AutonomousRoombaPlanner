@@ -77,6 +77,8 @@ class Roomba:
 
             if (self.goal_state and (self.goal_state.g < float('inf'))):
                     print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
+                    cost = self.getPathCost(self.goal_state)
+                    print("cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
             curr_time = time.time()
 
@@ -95,6 +97,8 @@ class Roomba:
 
                 if (self.goal_state and (self.goal_state.g < float('inf'))):
                     print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
+                    cost = self.getPathCost(self.goal_state)
+                    print("cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
                 curr_time = time.time()
 
@@ -238,6 +242,16 @@ class Roomba:
             state = state.parent
         print("total_cost is ", tot_cost)
         return self.convertStepsToPositions(steps)
+
+    def getPathCost(self, state):
+        tot_cost = 0
+        while (state.parent is not None):
+            action = state.parent_action
+            transitions = action.get_transitions(state.parent)
+            tot_cost += action.cost
+            state = state.parent
+        return tot_cost
+
     
     def convertStepsToPositions(self, steps):
         positions = []
