@@ -32,6 +32,8 @@ class Roomba:
         x, y, theta = start
         theta = theta % (2*math.pi)
         self.start = (x, y, theta)
+        
+
 
     def setGoal(self, goal):
         x, y, theta = goal
@@ -182,6 +184,7 @@ class Roomba:
 
 
         for action in motion_primitives:
+            valid_action = True
             transitions = action.get_transitions(state)
 
             dx = 0
@@ -192,6 +195,17 @@ class Roomba:
                 dx += transition[0]
                 dy += transition[1]
                 dtheta += transition[2]
+
+                temp_x = sx + dx
+                temp_y = sy + dy
+                temp_theta = (stheta + dtheta) % (2*math.pi)
+
+                if (not self.checkValidLocation((temp_x, temp_y))):
+                    valid_action = False
+                    break
+
+            if not valid_action:
+                continue
 
             successor_x = sx + dx
             successor_y = sy + dy
@@ -206,9 +220,7 @@ class Roomba:
             cost = state.g + action.cost
             successor = State(successor_x, successor_y, successor_theta, parent=state, parent_action=action, g=cost)
             successor.setH(self.heuristicFunc(successor))
-
-            if (self.checkValidState(successor)):
-                successors.append(successor)
+            successors.append(successor)
         return successors
 
     def backtrack(self, state):

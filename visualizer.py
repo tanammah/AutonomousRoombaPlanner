@@ -101,7 +101,6 @@ def redrawAll(canvas, data):
     data.roomba_theta = (data.roomba_theta + math.degrees(step[2])) % 360
     data.roomba_col += step[0]
     data.roomba_row += step[1]
-    print("Roomba pos (row, col): ({}, {})".format(data.roomba_row, data.roomba_col))
     data.tkimage = ImageTk.PhotoImage(data.pil_img.rotate(data.roomba_theta))
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     data.img_id = canvas.create_image(x0+(x1-x0)//2, y0+(y1-y0)//2, image=data.tkimage)
