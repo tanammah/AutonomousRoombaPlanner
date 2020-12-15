@@ -18,20 +18,6 @@ def init(data):
     data.pil_img = Image.open(data.img_file).resize((data.width//data.cols, data.height//data.rows))
     data.roomba_img = None
 
-    # with open(data.map_path, 'r') as f:
-    #     for line in f:
-    #         args = line.split(' ')
-    #         if args[0] == 'r':
-    #             data.obstacle_grid[int(args[2]):int(args[4])+1, int(args[1]):int(args[3])+1] = True
-    #         elif args[0] == 'start':
-    #             data.roomba_col = int(args[1])
-    #             data.roomba_row = int(args[2])
-    #             data.roomba_theta = int(args[3])
-    #         elif args[0] == 'goal':
-    #             data.goal_col = int(args[1])
-    #             data.goal_row = int(args[2])
-    #             data.goal_theta = int(args[3])
-
 def loadSavedData(data, d):
     start = d['start']
     goal = d['goal']
@@ -43,6 +29,21 @@ def loadSavedData(data, d):
     data.goal_row = int(goal[1])
     data.goal_theta = goal[2]
     data.obstacle_grid = obstacle_grid
+
+def loadMapFromFile(data, map_path='./map1.txt'):
+    with open(map_path, 'r') as f:
+        for line in f:
+            args = line.split(' ')
+            if args[0] == 'r':
+                data.obstacle_grid[int(args[2]):int(args[4])+1, int(args[1]):int(args[3])+1] = True
+            elif args[0] == 'start':
+                data.roomba_col = int(args[1])
+                data.roomba_row = int(args[2])
+                data.roomba_theta = int(args[3])
+            elif args[0] == 'goal':
+                data.goal_col = int(args[1])
+                data.goal_row = int(args[2])
+                data.goal_theta = int(args[3])
 
 def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
@@ -201,11 +202,12 @@ def run(map_path='./map1.txt', width=300, height=300):
     data = Visualizer()
     data.width = width
     data.height = height
-    data.timerDelay = 100 # milliseconds
+    data.timerDelay = 250 # milliseconds
     data.map_path = map_path
 
-    num_generated_maps = 0
-    # while (num_generated_maps < 1):
+    # Uncomment below to generate new random maps/configs
+    # num_generated_maps = 0
+    # while (num_generated_maps < 10):
     #     init(data)
     #     start = randomizeStart(data)
     #     goal = randomizeGoal(data)
@@ -217,18 +219,21 @@ def run(map_path='./map1.txt', width=300, height=300):
 
     #     data.path = data.roomba.findPath()
     #     if data.path != None:
-    #         np.savez('./map2_' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
+    #         np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
     #         num_generated_maps += 1
+
+    # Uncomment below to run pre-loaded maps
     d = np.load('map9.npz')
     init(data)
     loadSavedData(data, d)
+
+    # Uncomment below to run map from file
+    # loadMapFromFile(data, './map1.txt')
 
     data.roomba = Roomba()
     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
     data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
     data.roomba.setMap(data.obstacle_grid)
-    print((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
-    print((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
 
     # create the root and the canvas
     root = Tk()
@@ -238,7 +243,6 @@ def run(map_path='./map1.txt', width=300, height=300):
 
     # generate initial plan
     data.path = data.roomba.findPath()
-    print(data.path)
 
     # set up events
     root.bind("<Button-1>", lambda event:
