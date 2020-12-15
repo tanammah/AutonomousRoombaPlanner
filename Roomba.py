@@ -6,11 +6,11 @@ from queue import PriorityQueue
 
 class Roomba:
     def __init__(self):
-        self.map = None
+        self.map = None # numpy array
         self.start = None # tuple: (x, y, theta)
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
-        self.max_search_time = 2
+        self.max_search_time = 2 # seconds
         self.resolution = "high"
         self.heuristic_map = None # numpy array 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
@@ -225,10 +225,16 @@ class Roomba:
         return steps
 
     def checkValidState(self, state):
-        return True # TODO: change this to actually reference the map and also check bounds
+        return self.checkValidLocation((state.x, state.y))
 
     def checkValidLocation(self, loc):
-        return True # TODO: change this to actually reference the map and also check bounds
+        col, row = loc
+        map_height, map_width = self.map.shape
+
+        if (row < 0) or (row >= map_height) or (col < 0) or (col >= map_width):
+            return False
+
+        return not self.map[row][col]
 
     def heuristicFunc(self, state):
         goal_x = self.goal[0]
@@ -243,7 +249,7 @@ class Roomba:
         if (self.epsilon < 1): self.epsilon = 1
 
     def updateHeuristicMap(self):
-        """Updates the heuristic for map all obstacle-free map coordinates."""
+        """Updates the heuristic map for all obstacle-free map coordinates."""
         start = (self.goal[0], self.goal[1], 0)
 
         dx = [-1, -1, 0, 1, 1, 1, 0, -1]
