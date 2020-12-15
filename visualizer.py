@@ -203,32 +203,34 @@ def run(map_path='./map1.txt', width=300, height=300):
     data = Visualizer()
     data.width = width
     data.height = height
-    data.timerDelay = 100 # milliseconds
+    data.timerDelay = 250 # milliseconds
     data.map_path = map_path
     init(data)
 
-    # Uncomment below to generate new random maps/configs
-    # num_generated_maps = 0
-    # while (num_generated_maps < 10):
-    #     init(data)
-    #     start = randomizeStart(data)
-    #     goal = randomizeGoal(data)
-    #     randomizeMap(data)
-    #     data.roomba = Roomba()
-    #     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
-    #     data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
-    #     data.roomba.setMap(data.obstacle_grid)
-    #     data.path = data.roomba.findPath()
-    #     if data.path != None:
-    #         np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
-    #         num_generated_maps += 1
+    #Uncomment below to generate new random maps/configs
+    """
+    num_generated_maps = 0
+    while (num_generated_maps < 10):
+        init(data)
+        start = randomizeStart(data)
+        goal = randomizeGoal(data)
+        randomizeMap(data)
+        data.roomba = Roomba()
+        data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+        data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
+        data.roomba.setMap(data.obstacle_grid)
+        data.path = data.roomba.findPath()
+        if data.path != None:
+            np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
+            num_generated_maps += 1
+    """
 
     # Uncomment below to run pre-loaded maps
-    # d = np.load('map9.npz')
-    # loadSavedData(data, d)
+    d = np.load('map2.npz')
+    loadSavedData(data, d)
 
     # Uncomment below to run map from file
-    loadMapFromFile(data, './map1.txt')
+    #loadMapFromFile(data, './map1.txt')
 
     data.roomba = Roomba()
     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))

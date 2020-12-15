@@ -4,10 +4,22 @@ import math
 import numpy as np
 
 roomba = Roomba()
-roomba.setStart((4, 5, 0))
-roomba.setMap(np.array([[False]*80 for i in range(80)])) # input map here
-roomba.setGoal((12, 50, 7*math.pi/4))
 
-path = roomba.findPath()
-print("path is ", path)
+maps = ['map' + str(i) + '.npz' for i in range(1,10)]
 
+for i in range(len(maps)):
+	print("-------------- Map {} --------------------------".format(maps[i]))
+	d = np.load(maps[i])
+	obstacle_grid = d['gridmap']
+	startx, starty, start_theta = d['start']
+	goalx, goaly, goal_theta = d['goal']
+	startx = int(startx)
+	starty = int(starty)
+	goalx = int(goalx)
+	goaly = int(goaly)
+	start = startx, starty, math.radians(start_theta)
+	goal = goalx, goaly, math.radians(goal_theta)
+	roomba.setStart(start)
+	roomba.setGoal(goal)
+	roomba.setMap(obstacle_grid)
+	path = roomba.findPath()

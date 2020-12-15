@@ -1,0 +1,108 @@
+-------------- Map map1.npz --------------------------
+num expansions for low resolution (epsilon=5): 107
+num_expansions for low resolution (epsilon=3): 9
+num_expansions for low resolution (epsilon=1): 632
+
+
+num expansions for high resolution (epsilon=5): 61
+num_expansions for high resolution (epsilon=3): 0
+num_expansions for high resolution (epsilon=1): 394
+
+
+total_cost is  63.39999999999998
+-------------- Map map2.npz --------------------------
+num expansions for low resolution (epsilon=5): 110
+num_expansions for low resolution (epsilon=3): 11
+num_expansions for low resolution (epsilon=1): 158
+
+
+num expansions for high resolution (epsilon=5): 58
+num_expansions for high resolution (epsilon=3): 0
+num_expansions for high resolution (epsilon=1): 263
+
+
+total_cost is  51.79999999999999
+-------------- Map map3.npz --------------------------
+num expansions for low resolution (epsilon=5): 55
+num_expansions for low resolution (epsilon=3): 1
+num_expansions for low resolution (epsilon=1): 348
+
+
+num expansions for high resolution (epsilon=5): 40
+num_expansions for high resolution (epsilon=3): 0
+num_expansions for high resolution (epsilon=1): 1018
+
+
+total_cost is  71.99999999999999
+-------------- Map map4.npz --------------------------
+num expansions for low resolution (epsilon=5): 32
+num_expansions for low resolution (epsilon=3): 0
+num_expansions for low resolution (epsilon=1): 4
+
+
+num expansions for high resolution (epsilon=5): 32
+num_expansions for high resolution (epsilon=3): 0
+num_expansions for high resolution (epsilon=1): 10
+
+
+total_cost is  64.19999999999999
+-------------- Map map5.npz --------------------------
+num expansions for low resolution (epsilon=5): 177
+num_expansions for low resolution (epsilon=3): 0
+num_expansions for low resolution (epsilon=1): 578
+
+
+num expansions for high resolution (epsilon=5): 562
+num_expansions for high resolution (epsilon=3): 3
+num_expansions for high resolution (epsilon=1): 1582
+
+
+total_cost is  59.399999999999984
+-------------- Map map6.npz --------------------------
+num expansions for low resolution (epsilon=5): 420
+num_expansions for low resolution (epsilon=3): 7
+num_expansions for low resolution (epsilon=1): 1869
+
+
+num expansions for high resolution (epsilon=5): 699
+num_expansions for high resolution (epsilon=3): 17
+num_expansions for high resolution (epsilon=1): 5729
+
+
+total_cost is  79.60000000000002
+-------------- Map map7.npz --------------------------
+num expansions for low resolution (epsilon=5): 170
+num_expansions for low resolution (epsilon=3): 3
+num_expansions for low resolution (epsilon=1): 962
+
+
+num expansions for high resolution (epsilon=5): 276
+num_expansions for high resolution (epsilon=3): 3
+num_expansions for high resolution (epsilon=1): 3563
+
+
+total_cost is  66.39999999999998
+-------------- Map map8.npz --------------------------
+num expansions for low resolution (epsilon=5): 1038
+num_expansions for low resolution (epsilon=3): 583
+num_expansions for low resolution (epsilon=1): 272
+
+
+num expansions for high resolution (epsilon=5): 151
+num_expansions for high resolution (epsilon=3): 39
+num_expansions for high resolution (epsilon=1): 700
+
+
+total_cost is  76.0
+-------------- Map map9.npz --------------------------
+num expansions for low resolution (epsilon=5): 75
+num_expansions for low resolution (epsilon=3): 3
+num_expansions for low resolution (epsilon=1): 107
+
+
+num expansions for high resolution (epsilon=5): 68
+num_expansions for high resolution (epsilon=3): 3
+num_expansions for high resolution (epsilon=1): 418
+
+
+total_cost is  70.60000000000001

@@ -76,9 +76,9 @@ class Roomba:
                 continue 
 
             if (self.goal_state and (self.goal_state.g < float('inf'))):
-                    print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
                     cost = self.getPathCost(self.goal_state)
-                    print("cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
+                    print("num expansions for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, self.expansions_count))
+                    print("cost is ", cost)
 
             curr_time = time.time()
 
@@ -96,14 +96,15 @@ class Roomba:
                 self.improvePath()
 
                 if (self.goal_state and (self.goal_state.g < float('inf'))):
-                    print("path found for epsilon = {} ({})".format(self.epsilon, self.resolution + " resolution"))
                     cost = self.getPathCost(self.goal_state)
-                    print("cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
+                    print("num_expansions for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, self.expansions_count))
+                    print("cost is ", cost)
 
                 curr_time = time.time()
 
                 if ((curr_time - start_time >= self.max_search_time)):
                     return self.getSolution()
+            print("\n")
 
         return self.getSolution()
 
@@ -114,6 +115,7 @@ class Roomba:
         return None
 
     def improvePath(self):
+        self.expansions_count = 0
         while (not self.open.empty()):
             min_state = self.open.get()[1]
 
@@ -122,6 +124,7 @@ class Roomba:
             if (self.fvalue(self.goal_state) < self.fvalue(min_state)):
                 break
 
+            self.expansions_count += 1
             if self.checkGoal(min_state):
                 self.goal_state = min_state
                 return
@@ -198,6 +201,10 @@ class Roomba:
             dy = 0
             dtheta = 0
 
+            curr_x = sx
+            curr_y = sy
+            curr_theta = stheta
+
             for transition in transitions:
                 dx += transition[0]
                 dy += transition[1]
@@ -210,6 +217,15 @@ class Roomba:
                 if (not self.checkValidLocation((temp_x, temp_y))):
                     valid_action = False
                     break
+
+                # diagonal transition checking
+                if not self.checkValidTransition(curr_x, curr_y, transition[0], transition[1]):
+                    valid_action = False
+                    break
+
+                curr_x += dx
+                curr_y += dy
+                curr_theta += dtheta
 
             if not valid_action:
                 continue
@@ -243,6 +259,21 @@ class Roomba:
         print("total_cost is ", tot_cost)
         return self.convertStepsToPositions(steps)
 
+    def checkValidTransition(self, curr_x, curr_y, dx, dy):
+        """ Checks that a diagonal transition is valid i.e no obstacles obstructing transition"""
+        if (dx == 0) or (dy == 0):
+            return True
+
+        curr_col, curr_row = curr_x, curr_y
+
+        col_1, row_1 = curr_col, curr_row + dy
+        col_2, row_2 = curr_col + dx, curr_row
+
+        if (self.checkWithinBounds((col_1, row_1)) and self.checkWithinBounds((col_2, row_2))):
+            if self.map[row_1][col_1] or self.map[row_2][col_2]:
+                return False
+        return True
+
     def getPathCost(self, state):
         tot_cost = 0
         while (state.parent is not None):
@@ -269,13 +300,20 @@ class Roomba:
         return self.checkValidLocation((state.x, state.y))
 
     def checkValidLocation(self, loc):
+        if (not self.checkWithinBounds(loc)):
+            return False
+            
+        col, row = loc
+        return not self.map[row][col]
+
+    def checkWithinBounds(self, loc):
         col, row = loc
         map_height, map_width = self.map.shape
 
         if (row < 0) or (row >= map_height) or (col < 0) or (col >= map_width):
             return False
 
-        return not self.map[row][col]
+        return True
 
     def heuristicFunc(self, state):
         goal_x = self.goal[0]
