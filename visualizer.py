@@ -71,16 +71,14 @@ def getCellBounds(row, col, data):
 def mousePressed(event, canvas, data):
     (row, col) = getCell(event.x, event.y, data)
     # should we check whether the row col is on top of the roomba?
-    if not data.obstacle_grid[row][col]:
+    if (not data.obstacle_grid[row][col] and not (row == data.goal_row and col == data.goal_col)
+        and not (row == data.roomba_row and col == data.roomba_col)):
+
         (x0, y0, x1, y1) = getCellBounds(row, col, data)
         data.obstacle_grid[row][col] = True
         canvas.create_rectangle(x0, y0, x1, y1, fill="cyan")
-        # Update roomba map
 
 def keyPressed(event, data):
-    pass
-
-def timerFired(data):
     pass
 
 def drawInitialMap(canvas, data):
@@ -90,6 +88,9 @@ def drawInitialMap(canvas, data):
             (x0, y0, x1, y1) = getCellBounds(row, col, data)
             fill = "cyan" if (data.obstacle_grid[row][col]) else "orange"
             canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
+    # draw start state
+    (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
+    canvas.create_rectangle(x0, y0, x1, y1, fill="green")
     # draw goal state
     (x0, y0, x1, y1) = getCellBounds(data.goal_row, data.goal_col, data)
     canvas.create_rectangle(x0, y0, x1, y1, fill="red")
@@ -98,21 +99,27 @@ def drawInitialMap(canvas, data):
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     data.img_id = canvas.create_image(x0+(x1-x0)//2, y0+(y1-y0)//2, image=data.tkimage)
 
+def timerFired(data):
+    step = data.path[data.count]
+    if data.obstacle_grid[step[1]][step[0]]:
+        # Replan!
+        data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+        data.roomba.setMap(data.obstacle_grid)
+        data.path = data.roomba.findPath()
+        data.count = 0
+        step = data.path[data.count]
+    
+    data.roomba_theta = math.degrees(step[2]) % 360
+    data.roomba_col = step[0]
+    data.roomba_row = step[1]
+    if data.count < len(data.path):
+        data.count += 1
 
 def redrawAll(canvas, data):
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     canvas.create_rectangle(x0, y0, x1, y1, fill="green")
-
-    step = data.path[data.count]
-    data.roomba_theta = (data.roomba_theta + math.degrees(step[2])) % 360
-    data.roomba_col += step[0]
-    data.roomba_row += step[1]
     data.tkimage = ImageTk.PhotoImage(data.pil_img.rotate(data.roomba_theta))
-    (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     data.img_id = canvas.create_image(x0+(x1-x0)//2, y0+(y1-y0)//2, image=data.tkimage)
-
-    if data.count < len(data.path):
-        data.count += 1
 
 ####################################
 # use the run function as-is
@@ -120,11 +127,10 @@ def redrawAll(canvas, data):
 
 def run(map_path='./map1.txt', width=300, height=300):
     def redrawAllWrapper(canvas, data):
-        if data.count < len(data.path):
-            if data.img_id != None:
-                canvas.delete(data.img_id)
-            redrawAll(canvas, data)
-            canvas.update()    
+        if data.img_id != None:
+            canvas.delete(data.img_id)
+        redrawAll(canvas, data)
+        canvas.update()    
 
     def mousePressedWrapper(event, canvas, data):
         mousePressed(event, canvas, data)
@@ -135,8 +141,9 @@ def run(map_path='./map1.txt', width=300, height=300):
         redrawAllWrapper(canvas, data)
 
     def timerFiredWrapper(canvas, data):
-        timerFired(data)
-        redrawAllWrapper(canvas, data)
+        if data.count < len(data.path):
+            timerFired(data)
+            redrawAllWrapper(canvas, data)
         # pause, then call timerFired again
         canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
     # Set up data and call init
@@ -148,10 +155,10 @@ def run(map_path='./map1.txt', width=300, height=300):
     data.map_path = map_path
     init(data)
 
-    roomba = Roomba()
-    roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
-    roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
-    roomba.setMap(data.obstacle_grid)
+    data.roomba = Roomba()
+    data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+    data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
+    data.roomba.setMap(data.obstacle_grid)
     print((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
     print((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
 
@@ -162,7 +169,8 @@ def run(map_path='./map1.txt', width=300, height=300):
     drawInitialMap(canvas, data)
 
     # generate initial plan
-    data.path = roomba.findPath()
+    data.path = data.roomba.findPath()
+    data.need_new_plan = False
     print(data.path)
 
     # set up events

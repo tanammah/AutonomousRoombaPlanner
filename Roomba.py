@@ -10,7 +10,7 @@ class Roomba:
         self.start = None # tuple: (x, y, theta)
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
-        self.max_search_time = 2 # seconds
+        self.max_search_time = 0.1 # seconds
         self.resolution = "high"
         self.heuristic_map = None # numpy array 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
@@ -234,7 +234,19 @@ class Roomba:
             steps = transitions + steps
             state = state.parent
         print("total_cost is ", tot_cost)
-        return steps
+        return self.convertToPositions(steps)
+    
+    def convertToPositions(self, steps):
+        positions = []
+        curr_col = self.start[0]
+        curr_row = self.start[1]
+        curr_theta = self.start[2]
+        for step in steps:
+            curr_col += step[0]
+            curr_row += step[1]
+            curr_theta += step[2]
+            positions.append((curr_col, curr_row, curr_theta))
+        return positions
 
     def checkValidState(self, state):
         return self.checkValidLocation((state.x, state.y))
