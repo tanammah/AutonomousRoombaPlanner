@@ -10,28 +10,26 @@ from Roomba import Roomba
 def init(data):
     data.count = 0
     data.obstacle_grid = np.array([[False]*data.width for i in range(data.height)])
-    data.rows = 50
-    data.cols = 50
+    data.rows = 60
+    data.cols = 60
     data.img_id = None
     data.img_file = './roomba.png'
     data.pil_img = Image.open(data.img_file).resize((data.width//data.cols, data.height//data.rows))
     data.roomba_img = None
 
     with open(data.map_path, 'r') as f:
-        start_pos = f.readline().split(' ')
-        data.roomba_col = int(start_pos[0])
-        data.roomba_row = int(start_pos[1])
-        data.roomba_theta = int(start_pos[2])
-        
-        data.goal_pos = f.readline().split(' ')
-        data.goal_col = int(start_pos[0])
-        data.goal_row = int(start_pos[1])
-        data.goal_theta = int(start_pos[2])
-
         for line in f:
             args = line.split(' ')
             if args[0] == 'r':
-                data.obstacle_grid[int(args[2]):int(args[4]), int(args[1]):int(args[3])] = True
+                data.obstacle_grid[int(args[2]):int(args[4])+1, int(args[1]):int(args[3])+1] = True
+            elif args[0] == 'start':
+                data.roomba_col = int(args[1])
+                data.roomba_row = int(args[2])
+                data.roomba_theta = int(args[3])
+            elif args[0] == 'goal':
+                data.goal_col = int(args[1])
+                data.goal_row = int(args[2])
+                data.goal_theta = int(args[3])
 
 def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
@@ -103,6 +101,7 @@ def redrawAll(canvas, data):
     data.roomba_theta = (data.roomba_theta + math.degrees(step[2])) % 360
     data.roomba_col += step[0]
     data.roomba_row += step[1]
+    print("Roomba pos (row, col): ({}, {})".format(data.roomba_row, data.roomba_col))
     data.tkimage = ImageTk.PhotoImage(data.pil_img.rotate(data.roomba_theta))
     (x0, y0, x1, y1) = getCellBounds(data.roomba_row, data.roomba_col, data)
     data.img_id = canvas.create_image(x0+(x1-x0)//2, y0+(y1-y0)//2, image=data.tkimage)
@@ -116,10 +115,11 @@ def redrawAll(canvas, data):
 
 def run(map_path='./map1.txt', width=300, height=300):
     def redrawAllWrapper(canvas, data):
-        if data.img_id != None:
-           canvas.delete(data.img_id)
-        redrawAll(canvas, data)
-        canvas.update()    
+        if data.count < len(data.path):
+            if data.img_id != None:
+                canvas.delete(data.img_id)
+            redrawAll(canvas, data)
+            canvas.update()    
 
     def mousePressedWrapper(event, canvas, data):
         mousePressed(event, canvas, data)
@@ -147,6 +147,8 @@ def run(map_path='./map1.txt', width=300, height=300):
     roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
     roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
     roomba.setMap(data.obstacle_grid)
+    print((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+    print((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
 
     # create the root and the canvas
     root = Tk()
@@ -168,4 +170,4 @@ def run(map_path='./map1.txt', width=300, height=300):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run('map1.txt', 500, 500)
+run('map1.txt', 720, 720)
