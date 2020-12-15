@@ -6,6 +6,7 @@ from PIL import ImageTk
 from PIL import Image
 import math
 from Roomba import Roomba
+import random
 
 def init(data):
     data.count = 0
@@ -17,27 +18,76 @@ def init(data):
     data.pil_img = Image.open(data.img_file).resize((data.width//data.cols, data.height//data.rows))
     data.roomba_img = None
 
-    with open(data.map_path, 'r') as f:
-        for line in f:
-            args = line.split(' ')
-            if args[0] == 'r':
-                data.obstacle_grid[int(args[2]):int(args[4])+1, int(args[1]):int(args[3])+1] = True
-            elif args[0] == 'start':
-                data.roomba_col = int(args[1])
-                data.roomba_row = int(args[2])
-                data.roomba_theta = int(args[3])
-            elif args[0] == 'goal':
-                data.goal_col = int(args[1])
-                data.goal_row = int(args[2])
-                data.goal_theta = int(args[3])
+    # with open(data.map_path, 'r') as f:
+    #     for line in f:
+    #         args = line.split(' ')
+    #         if args[0] == 'r':
+    #             data.obstacle_grid[int(args[2]):int(args[4])+1, int(args[1]):int(args[3])+1] = True
+    #         elif args[0] == 'start':
+    #             data.roomba_col = int(args[1])
+    #             data.roomba_row = int(args[2])
+    #             data.roomba_theta = int(args[3])
+    #         elif args[0] == 'goal':
+    #             data.goal_col = int(args[1])
+    #             data.goal_row = int(args[2])
+    #             data.goal_theta = int(args[3])
+
+def loadSavedData(data, d):
+    start = d['start']
+    goal = d['goal']
+    obstacle_grid = d['gridmap']
+    data.roomba_col = start[0]
+    data.roomba_row = start[1]
+    data.roomba_theta = start[2]
+    data.goal_col = goal[0]
+    data.goal_row = goal[1]
+    data.goal_theta = goal[2]
+    data.obstacle_grid = obstacle_grid
 
 def pointInGrid(x, y, data):
     # return True if (x, y) is inside the grid defined by data.
     return x <= data.width and y <= data.height
 
-def isCollision(x, y, data):
-    # return True if (x, y) is inside the grid defined by data.
-    return data.obstacle_grid[y][x]
+def isBlockable(row, col, data):
+    if not pointInGrid(col, row, data):
+        return False
+    
+    if row == data.roomba_row and col == data.roomba_col:
+        return False
+
+    if row==data.goal_row and col==data.goal_col:
+        return False
+    
+    return True
+
+def isValidSquare(row, col, data):
+    for offset in [(0,0), (0,1), (1,0), (1,1)]:
+        if not isBlockable(row+offset[0], col+offset[1], data):
+            return False
+    
+    return True
+
+def randomizeMap(data, obstacle_chance=0.4):
+    for row in range((data.rows-1)//2):
+        for col in range((data.cols-1)//2):
+            if random.random() < obstacle_chance:
+                r = row*2
+                c = col*2
+                if isValidSquare(r, c, data):
+                    for offset in [(0,0), (0,1), (1,0), (1,1)]:
+                        data.obstacle_grid[r+offset[0]][c+offset[1]] = True
+
+def randomizeStart(data):
+    data.roomba_row = random.randint(0, data.rows-1)
+    data.roomba_col = random.randint(0, data.rows-1)
+    data.roomba_theta = random.randint(0, 7)*45
+    return (data.roomba_col, data.roomba_row, data.roomba_theta)
+
+def randomizeGoal(data):
+    data.goal_row = random.randint(0, data.rows-1)
+    data.goal_col = random.randint(0, data.rows-1)
+    data.goal_theta = random.randint(0, 7)*45
+    return (data.goal_col, data.goal_row, data.goal_theta)
 
 def getCell(x, y, data):
     # aka "viewToModel"
@@ -153,7 +203,25 @@ def run(map_path='./map1.txt', width=300, height=300):
     data.height = height
     data.timerDelay = 300 # milliseconds
     data.map_path = map_path
+
+    num_generated_maps = 1
+    # while (num_generated_maps < 10):
+    #     init(data)
+    #     start = randomizeStart(data)
+    #     goal = randomizeGoal(data)
+    #     randomizeMap(data)
+    #     data.roomba = Roomba()
+    #     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+    #     data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
+    #     data.roomba.setMap(data.obstacle_grid)
+
+    #     data.path = data.roomba.findPath()
+    #     if data.path != None:
+    #         np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
+    #         num_generated_maps += 1
+    d = np.load('map9.npz')
     init(data)
+    loadSavedData(data, d)
 
     data.roomba = Roomba()
     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
@@ -170,7 +238,6 @@ def run(map_path='./map1.txt', width=300, height=300):
 
     # generate initial plan
     data.path = data.roomba.findPath()
-    data.need_new_plan = False
     print(data.path)
 
     # set up events
@@ -178,7 +245,8 @@ def run(map_path='./map1.txt', width=300, height=300):
                             mousePressedWrapper(event, canvas, data))
     root.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data))
-    timerFiredWrapper(canvas, data)
+    if data.path != None:
+        timerFiredWrapper(canvas, data)
     # and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")

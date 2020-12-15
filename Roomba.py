@@ -10,7 +10,7 @@ class Roomba:
         self.start = None # tuple: (x, y, theta)
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
-        self.max_search_time = 0.1 # seconds
+        self.max_search_time = 1 # seconds
         self.resolution = "high"
         self.heuristic_map = None # numpy array 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
@@ -297,5 +297,3 @@ class Roomba:
                 if (key not in visited) and (self.checkValidLocation((x_prime, y_prime))):
                     queue.append((x_prime, y_prime, steps + 1))
                     visited.add(key)
-
-
