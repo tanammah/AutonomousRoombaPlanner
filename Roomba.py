@@ -1,5 +1,6 @@
 import math
 import time
+import numpy as np
 from utils import *
 from motion_primitives import *
 from queue import PriorityQueue
@@ -10,7 +11,7 @@ class Roomba:
         self.start = None # tuple: (x, y, theta)
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
-        self.max_search_time = 1 # seconds
+        self.max_search_time = 0.1 # seconds
         self.resolution = "high"
         self.heuristic_map = None # numpy array 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
@@ -27,14 +28,14 @@ class Roomba:
 
     def setMap(self, map_data):
         self.map = map_data
+        self.heuristic_map = np.zeros(map_data.shape)
+        self.updateHeuristicMap()
 
     def setStart(self, start):
         x, y, theta = start
         theta = theta % (2*math.pi)
         self.start = (x, y, theta)
         
-
-
     def setGoal(self, goal):
         x, y, theta = goal
         theta = theta % (2*math.pi)
@@ -318,6 +319,7 @@ class Roomba:
     def heuristicFunc(self, state):
         goal_x = self.goal[0]
         goal_y = self.goal[1]
+        #return self.heuristic_map[state.y][state.x]
         return math.sqrt((state.x - goal_x)**2 + (state.y - goal_y)**2)
 
     def fvalue(self, state):
@@ -328,24 +330,40 @@ class Roomba:
         if (self.epsilon < 1): self.epsilon = 1
 
     def updateHeuristicMap(self):
-        """Updates the heuristic map for all obstacle-free map coordinates."""
-        start = (self.goal[0], self.goal[1], 0)
+        """Updates the heuristic map for all obstacle-free map coordinates"""
+        t1 = time.time()
+        start = (self.goal[0], self.goal[1])
 
         dx = [-1, -1, 0, 1, 1, 1, 0, -1]
         dy = [0, -1, -1, -1, 0, 1, 1, 1]
 
-        queue = [start]
-        visited = set()
-        visited.add(str(start[0]) + "&" + str(start[1]))
+        heap = PriorityQueue()
+        heap_states = dict()
+        closed = set()
 
-        while (len(queue) > 0):
-            x, y, steps = queue.pop(0)
-            self.heuristic_map[y][x] = steps
+        heap.put((0, start))
+        heap_states[start] = 0
 
+        while (not heap.empty()):
+            min_state_cost , min_state = heap.get()
+
+            if min_state in closed: continue # might be a dummy node!
+
+            self.heuristic_map[min_state[1]][min_state[0]] = min_state_cost
+            closed.add(min_state)
+            del heap_states[min_state]
+
+            x, y = min_state
             for i in range(len(dx)):
                 x_prime = x + dx[i]
                 y_prime = y + dy[i]
-                key = str(x_prime) + "&" + str(y_prime)
-                if (key not in visited) and (self.checkValidLocation((x_prime, y_prime))):
-                    queue.append((x_prime, y_prime, steps + 1))
-                    visited.add(key)
+                neighbour = (x_prime, y_prime)
+                neighbour_cost = min_state_cost + euclid(min_state, neighbour)
+                if not (self.checkValidLocation(neighbour) and self.checkValidTransition(x, y, dx[i], dy[i])): continue
+                if neighbour in closed: continue
+                if ((neighbour in heap_states) and (heap_states[neighbour] < neighbour_cost)): continue
+                heap.put((neighbour_cost, neighbour))
+                heap_states[neighbour] = neighbour_cost
+        t2 = time.time()
+        print("it took {} seconds to update learn heuristic map".format(t2-t1))
+

@@ -1,0 +1,156 @@
+num expansions for low resolution (epsilon=5): 706
+cost is  912.999999999997
+num_expansions for low resolution (epsilon=3): 23
+cost is  907.5999999999971
+num_expansions for low resolution (epsilon=1): 3362
+cost is  813.9999999999976
+
+
+num expansions for high resolution (epsilon=5): 820
+cost is  898.5999999999962
+num_expansions for high resolution (epsilon=3): 0
+cost is  898.5999999999962
+num_expansions for high resolution (epsilon=1): 9003
+cost is  806.5999999999974
+total_cost is  806.5999999999974
+num expansions for low resolution (epsilon=5): 593
+cost is  826.3999999999977
+num_expansions for low resolution (epsilon=3): 0
+cost is  826.3999999999977
+num_expansions for low resolution (epsilon=1): 1388
+cost is  793.9999999999977
+
+
+num expansions for high resolution (epsilon=5): 540
+cost is  840.9999999999969
+num_expansions for high resolution (epsilon=3): 0
+cost is  840.9999999999969
+num_expansions for high resolution (epsilon=1): 9288
+cost is  755.1999999999982
+total_cost is  755.1999999999982
+num expansions for low resolution (epsilon=5): 619
+cost is  878.399999999997
+num_expansions for low resolution (epsilon=3): 1
+cost is  878.399999999997
+num_expansions for low resolution (epsilon=1): 2365
+cost is  783.1999999999979
+
+
+num expansions for high resolution (epsilon=5): 647
+cost is  824.3999999999969
+num_expansions for high resolution (epsilon=3): 1
+cost is  824.3999999999969
+num_expansions for high resolution (epsilon=1): 6341
+cost is  824.3999999999969
+
+
+total_cost is  824.3999999999969
+num expansions for low resolution (epsilon=5): 771
+cost is  904.9999999999968
+num_expansions for low resolution (epsilon=3): 26
+cost is  900.5999999999968
+num_expansions for low resolution (epsilon=1): 4340
+cost is  779.9999999999978
+
+
+num expansions for high resolution (epsilon=5): 887
+cost is  837.7999999999972
+num_expansions for high resolution (epsilon=3): 49
+cost is  833.3999999999972
+num_expansions for high resolution (epsilon=1): 6948
+cost is  805.3999999999972
+total_cost is  805.3999999999972
+num expansions for low resolution (epsilon=5): 701
+cost is  863.5999999999974
+num_expansions for low resolution (epsilon=3): 0
+cost is  863.5999999999974
+num_expansions for low resolution (epsilon=1): 1365
+cost is  771.599999999998
+
+
+num expansions for high resolution (epsilon=5): 787
+cost is  828.999999999997
+num_expansions for high resolution (epsilon=3): 0
+cost is  828.999999999997
+num_expansions for high resolution (epsilon=1): 4464
+cost is  780.1999999999978
+
+
+total_cost is  780.1999999999978
+num expansions for low resolution (epsilon=5): 665
+cost is  875.3999999999974
+num_expansions for low resolution (epsilon=3): 0
+cost is  875.3999999999974
+num_expansions for low resolution (epsilon=1): 2324
+cost is  782.3999999999982
+
+
+num expansions for high resolution (epsilon=5): 779
+cost is  858.5999999999965
+num_expansions for high resolution (epsilon=3): 0
+cost is  858.5999999999965
+num_expansions for high resolution (epsilon=1): 6115
+cost is  793.1999999999978
+total_cost is  793.1999999999978
+num expansions for low resolution (epsilon=5): 1133
+cost is  1252.7999999999997
+num_expansions for low resolution (epsilon=3): 1
+cost is  1252.7999999999997
+num_expansions for low resolution (epsilon=1): 2726
+cost is  778.7999999999978
+
+
+num expansions for high resolution (epsilon=5): 933
+cost is  829.1999999999971
+num_expansions for high resolution (epsilon=3): 44
+cost is  829.1999999999971
+num_expansions for high resolution (epsilon=1): 1102
+cost is  823.1999999999972
+
+
+total_cost is  823.1999999999972
+num expansions for low resolution (epsilon=5): 845
+cost is  1086.9999999999977
+num_expansions for low resolution (epsilon=3): 16
+cost is  1086.9999999999977
+num_expansions for low resolution (epsilon=1): 3300
+cost is  790.3999999999979
+
+
+num expansions for high resolution (epsilon=5): 648
+cost is  857.3999999999969
+num_expansions for high resolution (epsilon=3): 1
+cost is  857.3999999999969
+num_expansions for high resolution (epsilon=1): 6028
+cost is  819.199999999997
+total_cost is  819.199999999997
+num expansions for low resolution (epsilon=5): 569
+cost is  1081.9999999999982
+num_expansions for low resolution (epsilon=3): 4
+cost is  1081.9999999999982
+num_expansions for low resolution (epsilon=1): 4916
+cost is  774.7999999999979
+
+
+num expansions for high resolution (epsilon=5): 1155
+cost is  823.5999999999968
+num_expansions for high resolution (epsilon=3): 30
+cost is  823.5999999999968
+num_expansions for high resolution (epsilon=1): 14378
+cost is  814.9999999999969
+total_cost is  814.9999999999969
+num expansions for low resolution (epsilon=5): 696
+cost is  1141.9999999999989
+num_expansions for low resolution (epsilon=3): 11
+cost is  1141.9999999999989
+num_expansions for low resolution (epsilon=1): 1973
+cost is  784.3999999999977
+
+
+num expansions for high resolution (epsilon=5): 1013
+cost is  863.3999999999968
+num_expansions for high resolution (epsilon=3): 11
+cost is  863.3999999999968
+num_expansions for high resolution (epsilon=1): 11072
+cost is  793.3999999999977
+total_cost is  793.3999999999977

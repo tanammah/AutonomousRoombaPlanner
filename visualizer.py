@@ -68,7 +68,7 @@ def isValidSquare(row, col, data):
     
     return True
 
-def randomizeMap(data, obstacle_chance=0.4):
+def randomizeMap(data, obstacle_chance=0.2):
     for row in range((data.rows-1)//2):
         for col in range((data.cols-1)//2):
             if random.random() < obstacle_chance:
@@ -208,29 +208,28 @@ def run(map_path='./map1.txt', width=300, height=300):
     init(data)
 
     #Uncomment below to generate new random maps/configs
-    """
-    num_generated_maps = 0
-    while (num_generated_maps < 10):
-        init(data)
-        start = randomizeStart(data)
-        goal = randomizeGoal(data)
-        randomizeMap(data)
-        data.roomba = Roomba()
-        data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
-        data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
-        data.roomba.setMap(data.obstacle_grid)
-        data.path = data.roomba.findPath()
-        if data.path != None:
-            np.savez('./map' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
-            num_generated_maps += 1
-    """
-
+    # num_generated_maps = 0
+    # while (num_generated_maps < 10):
+    #     init(data)
+    #     start = randomizeStart(data)
+    #     goal = randomizeGoal(data)
+    #     randomizeMap(data)
+    #     data.roomba = Roomba()
+    #     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
+    #     data.roomba.setGoal((data.goal_col, data.goal_row, math.radians(data.goal_theta)))
+    #     data.roomba.setMap(data.obstacle_grid)
+    #     data.path = data.roomba.findPath()
+    #     if data.path != None:
+    #         np.savez('./map_600_' + str(num_generated_maps) + '.npz', start=start, goal=goal, gridmap=data.obstacle_grid)
+    #         num_generated_maps += 1
+    
+    
     # Uncomment below to run pre-loaded maps
-    #d = np.load('map9.npz')
+    #d = np.load('map1.npz')
     #loadSavedData(data, d)
 
     # Uncomment below to run map from file
-    loadMapFromFile(data, './map1.txt')
+    loadMapFromFile(data, './map2.txt')
 
     data.roomba = Roomba()
     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))
@@ -238,6 +237,7 @@ def run(map_path='./map1.txt', width=300, height=300):
     data.roomba.setMap(data.obstacle_grid)
 
     # create the root and the canvas
+    
     root = Tk()
     canvas = Canvas(root, width=data.width, height=data.height)
     canvas.pack()
@@ -252,9 +252,9 @@ def run(map_path='./map1.txt', width=300, height=300):
     root.bind("<Key>", lambda event:
                             keyPressedWrapper(event, canvas, data))
     if data.path != None:
-        timerFiredWrapper(canvas, data)
-    # and launch the app
+       timerFiredWrapper(canvas, data)
+    #and launch the app
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-run('map1.txt', 720, 720)
+run('map1.txt', 600, 600)
