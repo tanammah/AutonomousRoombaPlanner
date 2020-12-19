@@ -78,8 +78,7 @@ class Roomba:
 
             if (self.goal_state and (self.goal_state.g < float('inf'))):
                     cost = self.getPathCost(self.goal_state)
-                    print("num expansions for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, self.expansions_count))
-                    print("cost is ", cost)
+                    print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
             curr_time = time.time()
 
@@ -98,8 +97,7 @@ class Roomba:
 
                 if (self.goal_state and (self.goal_state.g < float('inf'))):
                     cost = self.getPathCost(self.goal_state)
-                    print("num_expansions for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, self.expansions_count))
-                    print("cost is ", cost)
+                    print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
                 curr_time = time.time()
 
@@ -257,7 +255,6 @@ class Roomba:
             tot_cost += action.cost
             steps = transitions + steps
             state = state.parent
-        print("total_cost is ", tot_cost)
         return self.convertStepsToPositions(steps)
 
     def checkValidTransition(self, curr_x, curr_y, dx, dy):
