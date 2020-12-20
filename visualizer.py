@@ -225,11 +225,11 @@ def run(map_path='./map1.txt', width=300, height=300):
     
     
     # Uncomment below to run pre-loaded maps
-    #d = np.load('map1.npz')
-    #loadSavedData(data, d)
+    d = np.load('map20.npz')
+    loadSavedData(data, d)
 
     # Uncomment below to run map from file
-    loadMapFromFile(data, './map2.txt')
+    #loadMapFromFile(data, './map2.txt')
 
     data.roomba = Roomba()
     data.roomba.setStart((data.roomba_col, data.roomba_row, math.radians(data.roomba_theta)))

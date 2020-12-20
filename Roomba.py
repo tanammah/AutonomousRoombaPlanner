@@ -11,9 +11,10 @@ class Roomba:
         self.start = None # tuple: (x, y, theta)
         self.goal = None  # tuple: (x, y, theta)
         self.lattice_resolution_dict = self.generateResolutionDict()
-        self.max_search_time = 0.1 # seconds
+        self.max_search_time = 1 # seconds
         self.resolution = "high"
         self.heuristic_map = None # numpy array 
+        self.heuristic_maps = dict() # dict of numpy arrays 
         self.heat_zone_threshold = 4 # radius about start and goal endpoints within which all primitives are used even in low resolution
 
         # ARA* related member variables
@@ -29,7 +30,9 @@ class Roomba:
     def setMap(self, map_data):
         self.map = map_data
         self.heuristic_map = np.zeros(map_data.shape)
-        self.updateHeuristicMap()
+        self.heuristic_maps['low'] = np.array([[100000000]*len(map_data[0]) for i in range(len(map_data))], dtype=float)
+        self.heuristic_maps['high'] = np.array([[100000000]*len(map_data[0]) for i in range(len(map_data))], dtype=float)
+        self.updateHeuristicMapLatticeGraph()
 
     def setStart(self, start):
         x, y, theta = start
@@ -51,6 +54,7 @@ class Roomba:
         return res_dict
 
     def findPath(self):
+        return self.findPathNoReset()
         start_time = time.time()
 
         for resolution in ['low', 'high']:
@@ -76,7 +80,7 @@ class Roomba:
             if (self.goal_state.g == float('inf')): # if no solution is found in lower res, skip to higher res
                 continue 
 
-            if (self.goal_state and (self.goal_state.g < float('inf'))):
+            if (self.goal_state.g < float('inf')):
                     cost = self.getPathCost(self.goal_state)
                     print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
@@ -95,7 +99,7 @@ class Roomba:
 
                 self.improvePath()
 
-                if (self.goal_state and (self.goal_state.g < float('inf'))):
+                if (self.goal_state.g < float('inf')):
                     cost = self.getPathCost(self.goal_state)
                     print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
 
@@ -103,6 +107,69 @@ class Roomba:
 
                 if ((curr_time - start_time >= self.max_search_time)):
                     return self.getSolution()
+            print("\n")
+
+        return self.getSolution()
+
+    def findPathNoReset(self, resolution='low'):
+        start_time = time.time()
+
+        self.resolution = resolution
+        start_state = State(self.start[0], self.start[1], self.start[2], g=0)
+        start_state.h = self.heuristicFunc(start_state)
+
+        self.goal_state = State(self.goal[0], self.goal[1], self.goal[2], g=float('inf'), h=0)
+
+        # initialize data structures
+        self.incons = set()
+        self.closed = dict()
+        self.open = PriorityQueue()
+        self.open_states = dict()
+
+        self.epsilon = self.epsilon_init_val
+
+        self.open.put((self.fvalue(start_state), start_state))
+        self.open_states[start_state] = start_state
+
+        self.improvePath()
+
+        if (self.goal_state.g == float('inf')): # if no solution is found in lower res, skip to higher res
+            if resolution == 'high':
+                return None
+            return findPathNoReset('high') 
+
+        if (self.goal_state.g < float('inf')):
+                cost = self.getPathCost(self.goal_state)
+                print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
+
+        curr_time = time.time()
+
+        # path should be found at this point. return a solution if no more time is left
+        if ((curr_time - start_time >= self.max_search_time)):
+            return self.getSolution()
+
+        while (self.epsilon > 1): # TODO change this condition to use epsilon prime instead (read algorithm)
+            self.decreaseEpsilon()
+
+            self.updateOpen()
+            self.incons = set()
+            self.closed = dict()
+
+            self.improvePath()
+
+            if (self.goal_state.g < float('inf')):
+                cost = self.getPathCost(self.goal_state)
+                print("solution cost for {} resolution (epsilon={}): {}".format(self.resolution, self.epsilon, cost))
+
+            curr_time = time.time()
+
+            if ((curr_time - start_time >= self.max_search_time)):
+                return self.getSolution()
+
+            if (self.epsilon <= 1 and self.resolution == 'low'):
+                self.epsilon = self.epsilon_init_val
+                self.resolution = 'high'
+                print("doing no reset")
             print("\n")
 
         return self.getSolution()
@@ -152,7 +219,7 @@ class Roomba:
             state = self.open.get()[1]
 
             if (state.g > self.open_states[state].g): continue # skip dummy nodes!
-            if ((state.g + state.h) >= self.goal_state.g): continue # prunes states that can never produce a more optimal solution
+            if ((state.g + state.h) >= self.goal_state.g): continue # prune states that can never produce a more optimal solution
 
             state_buffer.append(state)
 
@@ -233,13 +300,9 @@ class Roomba:
             successor_y = sy + dy
             successor_theta = stheta + dtheta
 
-            # normalize so thetas stay within {0 -> 2pi}
-            if (successor_theta < 0):
-                successor_theta = successor_theta % (2*math.pi)
-            elif (successor_theta > 2*math.pi):
-                successor_theta = successor_theta % (2*math.pi)
+            successor_theta = successor_theta % (2*math.pi) # normalize so thetas stay within {0 -> 2pi}
 
-            cost = state.g + action.cost
+            cost = state.g + action.get_cost(state)
             successor = State(successor_x, successor_y, successor_theta, parent=state, parent_action=action, g=cost)
             successor.setH(self.heuristicFunc(successor))
             successors.append(successor)
@@ -252,7 +315,7 @@ class Roomba:
         while (state.parent is not None):
             action = state.parent_action
             transitions = action.get_transitions(state.parent)
-            tot_cost += action.cost
+            tot_cost += action.get_cost(state.parent)
             steps = transitions + steps
             state = state.parent
         return self.convertStepsToPositions(steps)
@@ -277,11 +340,10 @@ class Roomba:
         while (state.parent is not None):
             action = state.parent_action
             transitions = action.get_transitions(state.parent)
-            tot_cost += action.cost
+            tot_cost += action.get_cost(state.parent)
             state = state.parent
         return tot_cost
 
-    
     def convertStepsToPositions(self, steps):
         positions = []
         curr_col = self.start[0]
@@ -316,7 +378,7 @@ class Roomba:
     def heuristicFunc(self, state):
         goal_x = self.goal[0]
         goal_y = self.goal[1]
-        #return self.heuristic_map[state.y][state.x]
+        #return self.heuristic_maps[self.resolution][state.y][state.x]
         return math.sqrt((state.x - goal_x)**2 + (state.y - goal_y)**2)
 
     def fvalue(self, state):
@@ -326,7 +388,7 @@ class Roomba:
         self.epsilon -= self.epsilon_decrement
         if (self.epsilon < 1): self.epsilon = 1
 
-    def updateHeuristicMap(self):
+    def updateHeuristicMapFullyConnected(self):
         """Updates the heuristic map for all obstacle-free map coordinates"""
         t1 = time.time()
         start = (self.goal[0], self.goal[1])
@@ -361,6 +423,78 @@ class Roomba:
                 if ((neighbour in heap_states) and (heap_states[neighbour] < neighbour_cost)): continue
                 heap.put((neighbour_cost, neighbour))
                 heap_states[neighbour] = neighbour_cost
+        t2 = time.time()
+        print("it took {} seconds to update learn heuristic map".format(t2-t1))
+
+    def updateHeuristicMapLatticeGraph(self):
+        """Updates the heuristic map for all obstacle-free map coordinates"""
+        t1 = time.time()
+
+        movements = dict()
+        for res in ['low', 'high']:
+            motion_primitives = self.lattice_resolution_dict[res]
+            d = dict()
+            for action in motion_primitives:
+                for i in range(8):
+                    theta = i*math.pi/4
+                    state = State(0, 0, theta)
+                    transitions = action.get_transitions(state)
+                    cost = action.get_cost(state)
+                    # Multiply by -1 to invert actions
+                    if len(transitions) > 1:
+                        dx = -1*(transitions[0][0] + transitions[1][0])
+                        dy = -1*(transitions[0][1] + transitions[1][1])  
+                        if (dx,dy) not in d or d[(dx,dy)] > cost:
+                            d[(dx,dy)] = cost
+                    else:
+                        dx = -1*transitions[0][0]
+                        dy = -1*transitions[0][1]
+                        if (dx,dy) not in d or d[(dx,dy)] > cost:
+                            d[(dx, dy)] = cost
+        
+            movements[res] = set()
+            for (dx,dy) in d:
+                movements[res].add((dx,dy,d[(dx,dy)]))
+
+        for res in ['low', 'high']:
+            start = (self.goal[0], self.goal[1])
+            print(start)
+
+            heap = PriorityQueue()
+            heap_states = dict()
+            closed = set()
+
+            heap.put((0, start))
+            heap_states[start] = 0
+
+            while (not heap.empty()):
+                min_state_cost , min_state = heap.get()
+
+                if min_state in closed: continue # might be a dummy node!
+
+                self.heuristic_maps[res][min_state[1]][min_state[0]] = min_state_cost
+                closed.add(min_state)
+                del heap_states[min_state]
+
+                x, y = min_state
+
+                if euclid(min_state, start) < self.heat_zone_threshold:
+                    moves = movements["high"]
+                else:
+                    moves = movements[res]
+
+                for move in moves:
+                    (dx, dy, move_cost) = move
+                    x_prime = x + dx
+                    y_prime = y + dy
+                    neighbour = (x_prime, y_prime)
+                    neighbour_cost = min_state_cost + move_cost
+                    if not (self.checkValidLocation(neighbour)): continue
+                    if neighbour in closed: continue
+                    if ((neighbour in heap_states) and (heap_states[neighbour] < neighbour_cost)): continue
+                    heap.put((neighbour_cost, neighbour))
+                    heap_states[neighbour] = neighbour_cost
+        
         t2 = time.time()
         print("it took {} seconds to update learn heuristic map".format(t2-t1))
 

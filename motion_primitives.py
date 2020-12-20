@@ -12,8 +12,18 @@ class Action:
         """
         raise NotImplementedError("Transition function not implemented")
 
-    def get_cost(self):
-        return self.cost
+    def get_cost(self, init_state):
+        transitions = self.get_transitions(init_state)
+
+        cost = 0
+        for t in transitions:
+            cost += math.sqrt(t[0]**2 + t[1]**2)
+
+        # discourage backward actions
+        if ('Backward' in self.name):
+            cost += 1
+
+        return cost
 
 class ForwardAction(Action):
     def __init__(self):
