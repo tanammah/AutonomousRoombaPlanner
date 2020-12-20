@@ -54,7 +54,6 @@ class Roomba:
         return res_dict
 
     def findPath(self):
-        return self.findPathNoReset()
         start_time = time.time()
 
         for resolution in ['low', 'high']:
